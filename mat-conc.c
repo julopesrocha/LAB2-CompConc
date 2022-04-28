@@ -13,12 +13,30 @@ de forma sequencial e armazena o matriz_concorrente em uma variavel separada.
 float *matriz1; // 1º matriz de entrada
 float *matriz2; // 2º matriz de entrada
 float *matriz_concorrente; // matriz de saída
+float *matriz_sequencial; // matriz de saída
 int nthreads; // numero de threads
 
 typedef struct {
     int id; //identificador do elemento que a thread irá processar
     int dim; // dimensão das estruturas de entrada
 } tArgs;
+
+// função sequencial para multiplicação
+void multiSequencial(int dim){
+    matriz_sequencial = (float *) malloc(sizeof(float) * dim * dim);
+    float temp; // variavel temporaria para multiplicação das matrizes
+
+    for(int i=0; i<dim; i++){
+        for(int j=0; j<dim; j++){
+            temp=0.0;
+            for(int k=0; k<dim; k++){
+                temp = temp + matriz1[dim*i+k] * matriz2[dim*k+j]; 
+            }
+            matriz_sequencial[i*dim+j]=temp;
+        }
+    }
+} 
+
 
 // função executada pelas threads
 void * multiplica(void *arg){
@@ -45,11 +63,13 @@ int main(int argc, char* argv[]) {
     int dim;
     pthread_t *tid;
     tArgs *args; // id locais e dimensões
-    double inicio, fim, delta;
+    double inicio, fim, delta, Tseq, Tconc;
 
     /* Passo 1: leitura e avaliação de params de entrada */
+    GET_TIME(inicio);
+
     if(argc<2){
-        printf("Digite %s <dimensão da matriz> <numero de threads>\n", argv[0]);
+        printf("Digite %s <dimensão da matriz> <numero de threads> \n", argv[0]);
         return 1;
     }
     
@@ -79,6 +99,8 @@ int main(int argc, char* argv[]) {
         return 2;
     }
 
+    delta = fim-inicio;
+    printf("Tempo Inicialização: %lf \n", delta);
     /* Passo 3: inicialização das estruturas de dados*/
 
     // inicializando a 1º matriz e a 2º
@@ -92,8 +114,16 @@ int main(int argc, char* argv[]) {
             */ 
         }
     }
+    /* Passo 4: multiplicação das matrizes | Sequencial */
+    GET_TIME(inicio);
+    multiSequencial(dim);
+    GET_TIME(fim);
+    delta = fim - inicio;
+    Tseq=delta;
+    printf("Tempo multiplicação sequencial:%lf\n", delta);
 
-    /* Passo 4: multiplicação das matrizes */
+    /* Passo 4: multiplicação das matrizes | Concorrente */
+    GET_TIME(inicio);
         // 4.1 : alocação das estruturas
     tid = (pthread_t*) malloc(sizeof(pthread_t)*nthreads);
     if(tid == NULL) {
@@ -123,7 +153,16 @@ int main(int argc, char* argv[]) {
         pthread_join(*(tid+i), NULL);
     }
 
+    GET_TIME(fim);
+    delta = fim-inicio;
+    Tconc = delta;
+    printf("Tempo Multiplicação | Concorrente: %lf \n", delta);
+
+    
+	
     /* Passo 5: exibição dos matriz_concorrentes (matriz x vetor = vetor) */
+    GET_TIME(inicio);
+
     puts("1º Matriz de Entrada:");
     for(int i=0; i<dim; i++){
         for(int j=0; j<dim; j++){
@@ -147,11 +186,18 @@ int main(int argc, char* argv[]) {
         }
         puts("");
     }
+    /*realizando a avaliação de tempos */
+    printf("Tempo multiplicação | Sequencial:%lf \n", Tseq);
+    printf("Tempo Multiplicação | Concorrente: %lf \n", Tconc);
+    printf("percentual :%lf\n", Tseq/Tconc);
+
     /* Passo 6: liberação da memória */
 
     free(matriz1);
     free(matriz2);
     free(matriz_concorrente);
 
+    
+    
     return 0;
 }
