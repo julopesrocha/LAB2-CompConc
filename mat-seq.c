@@ -6,6 +6,7 @@ de forma sequencial e armazena o resultado em uma variavel separada.
 
 #include<stdlib.h>
 #include<stdio.h>
+#include"timer.h"
 
 float *matriz1; // 1º matriz de entrada
 float *matriz2; // 2º matriz de entrada
@@ -23,8 +24,11 @@ float *resultado; // matriz de saída
 int main(int arg1, char*arg2[]) {
 
     int dim; // dimensão da 1º matriz de entrada
+    double inicio, fim, delta; // variáveis para medição de tempo
 
+    GET_TIME(inicio);
     /* Passo 1: leitura e avaliação de params de entrada */
+
     if(arg1<2){
         printf("Digite a <dimensão da matriz>\n");
         return 1;
@@ -75,9 +79,15 @@ int main(int arg1, char*arg2[]) {
     
     /* visto que as duas matrizes sao quadradas, a matriz identidade terá sua dimensão baseada
     no número de colunas da primeira, e de nº de linhas da segunda */
+    GET_TIME(fim);
+    delta = fim-inicio;
+    printf("Tempo Inicialização: %lf \n\n", delta);
 
     /* Passo 4: multiplicação das matrizes */
-    float temp;
+    GET_TIME(inicio);
+
+    float temp; // variavel temporaria para multiplicação das matrizes
+
     for(int i=0; i<dim; i++){
         for(int j=0; j<dim; j++){
             temp=0.0;
@@ -87,7 +97,14 @@ int main(int arg1, char*arg2[]) {
             resultado[i*dim+j]=temp;
         }
     }
+
+    GET_TIME(fim);
+    delta = fim-inicio;
+    printf("Tempo multiplicação: %lf \n\n", delta);
+
     /* Passo 5: exibição dos resultados (matriz x vetor = vetor) */
+    GET_TIME(inicio);
+    
     puts("1º Matriz de Entrada:");
     for(int i=0; i<dim; i++){
         for(int j=0; j<dim; j++){
@@ -120,6 +137,11 @@ int main(int arg1, char*arg2[]) {
     free(matriz1);
     free(matriz2);
     free(resultado);
+
+    GET_TIME(fim);
+    delta = fim-inicio;
+    printf("Tempo de Saída: %lf \n\n", delta);
+    printf("Tempo Total:  ");
 
     return 0;
 }
