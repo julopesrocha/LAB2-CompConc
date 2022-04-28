@@ -2,6 +2,8 @@
 Programa Sequencial | Efetua  a multiplicação das matrizes de entrada 
 de forma sequencial e armazena o resultado em uma variavel separada.
 - Considerando matrizes quadradas
+cmd: gcc -o mat-seq mat-seq.c -lpthread
+     ./mat-seq
 */
 
 #include<stdlib.h>
